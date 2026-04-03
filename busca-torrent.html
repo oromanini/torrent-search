@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Busca Torrent</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: #0e0e0e;
+    color: #f0ece4;
+    min-height: 100vh;
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  a { text-decoration: none; }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .logo {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.25em;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .title {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    color: #f0ece4;
+  }
+
+  .title span { color: #D85A30; }
+
+  .subtitle {
+    margin-top: 0.75rem;
+    font-size: 15px;
+    color: #666;
+  }
+
+  .search-box {
+    max-width: 680px;
+    margin: 0 auto 2rem;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .search-input {
+    flex: 1;
+    height: 54px;
+    padding: 0 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 12px;
+    border: 1.5px solid #2a2a2a;
+    background: #181818;
+    color: #f0ece4;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-input::placeholder { color: #444; }
+  .search-input:focus { border-color: #D85A30; }
+
+  .search-btn {
+    height: 54px;
+    padding: 0 26px;
+    background: #D85A30;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .search-btn:hover { background: #c04e27; }
+  .search-btn:active { transform: scale(0.97); }
+
+  .categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: center;
+  }
+
+  .cat-btn {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid #2a2a2a;
+    background: #181818;
+    color: #888;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .cat-btn:hover, .cat-btn.active {
+    background: #D85A30;
+    color: #fff;
+    border-color: #D85A30;
+  }
+
+  .section-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #444;
+    margin-bottom: 1rem;
+  }
+
+  .sites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+  }
+
+  .site-card {
+    background: #181818;
+    border: 0.5px solid #252525;
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #f0ece4;
+  }
+
+  .site-card:hover {
+    border-color: #D85A30;
+    background: #1f1a18;
+  }
+
+  .site-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    background: #222;
+  }
+
+  .site-info { flex: 1; min-width: 0; }
+
+  .site-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f0ece4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .site-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .tag {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #222;
+    color: #555;
+  }
+
+  .arrow {
+    font-size: 14px;
+    color: #D85A30;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .site-card:hover .arrow { opacity: 1; }
+
+  .notice {
+    max-width: 680px;
+    margin: 2.5rem auto 0;
+    padding: 12px 18px;
+    background: #181818;
+    border: 0.5px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #555;
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  .open-all-bar {
+    max-width: 880px;
+    margin: 1.2rem auto 0;
+    padding: 11px;
+    text-align: center;
+    border: 1px dashed #2a2a2a;
+    border-radius: 10px;
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    color: #555;
+    cursor: pointer;
+    background: none;
+    width: 100%;
+    transition: all 0.15s;
+  }
+
+  .open-all-bar:hover {
+    border-color: #D85A30;
+    color: #D85A30;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo">torrent search</div>
+  <h1 class="title">Busca<span>.</span>Torrent</h1>
+  <p class="subtitle">Pesquise em múltiplos indexadores com um clique</p>
+</div>
+
+<div class="search-box">
+  <div class="input-row">
+    <input class="search-input" type="text" id="query" placeholder="Filme, série, livro, jogo, música..." autocomplete="off" />
+    <button class="search-btn" onclick="searchAll()">Buscar tudo ↗</button>
+  </div>
+  <div class="categories">
+    <button class="cat-btn active" onclick="setCategory('all', this)">Tudo</button>
+    <button class="cat-btn" onclick="setCategory('movies', this)">🎬 Filmes</button>
+    <button class="cat-btn" onclick="setCategory('tv', this)">📺 Séries</button>
+    <button class="cat-btn" onclick="setCategory('books', this)">📚 Livros</button>
+    <button class="cat-btn" onclick="setCategory('games', this)">🎮 Jogos</button>
+    <button class="cat-btn" onclick="setCategory('music', this)">🎵 Música</button>
+    <button class="cat-btn" onclick="setCategory('software', this)">💾 Software</button>
+  </div>
+</div>
+
+<div class="section-wrap">
+  <p class="section-title">indexadores — clique para buscar individualmente</p>
+  <div class="sites-grid" id="sites-grid"></div>
+  <button class="open-all-bar" onclick="searchAll()">abrir todos os resultados filtrados de uma vez ↗</button>
+</div>
+
+<div class="notice">
+  ⚠️ Uso pessoal. Verifique as leis de direitos autorais do seu país antes de baixar conteúdo protegido.<br>
+  Alguns sites podem precisar de VPN ou proxy caso estejam bloqueados pelo seu provedor.
+</div>
+
+<script>
+const allSites = [
+  { name: "The Pirate Bay",   url: "https://thepiratebay.org/search.php?q=",             icon: "🏴",  cats: ["all","movies","tv","books","games","music","software"] },
+  { name: "1337x",            url: "https://1337x.to/search/{Q}/1/",                      icon: "⚡",  cats: ["all","movies","tv","books","games","music","software"], special: "1337x" },
+  { name: "Nyaa.si",          url: "https://nyaa.si/?f=0&c=0_0&q=",                       icon: "🐱",  cats: ["all","movies","tv","music"] },
+  { name: "YTS",              url: "https://yts.mx/browse-movies/{Q}/all/all/0/latest",   icon: "🎬",  cats: ["all","movies"], special: "yts" },
+  { name: "EZTV",             url: "https://eztv.re/search/",                             icon: "📺",  cats: ["all","tv"] },
+  { name: "LimeTorrents",     url: "https://www.limetorrents.lol/search/all/{Q}/seeds/1/", icon: "🍋", cats: ["all","movies","tv","books","music","software"], special: "lime" },
+  { name: "Torrentz2",        url: "https://torrentz2.nz/search?f=",                      icon: "🌀",  cats: ["all","movies","tv","music","books"] },
+  { name: "Anna's Archive",   url: "https://annas-archive.org/search?q=",                 icon: "📖",  cats: ["all","books"] },
+  { name: "Library Genesis",  url: "https://libgen.is/search.php?req=",                   icon: "📚",  cats: ["all","books"] },
+  { name: "Rutracker",        url: "https://rutracker.org/forum/tracker.php?nm=",         icon: "🇷🇺", cats: ["all","movies","tv","music","software"] },
+  { name: "Zooqle",           url: "https://zooqle.com/search?q=",                        icon: "🔍",  cats: ["all","movies","tv","games"] },
+  { name: "Kickass Torrents", url: "https://katcr.to/search.php?q=",                      icon: "⚽",  cats: ["all","movies","tv","music","books"] },
+  { name: "FitGirl Repacks",  url: "https://fitgirl-repacks.site/?s=",                    icon: "🎮",  cats: ["all","games"] },
+  { name: "IGGGAMES",         url: "https://igg-games.com/?s=",                           icon: "🕹️", cats: ["all","games"] },
+  { name: "bt4g",             url: "https://bt4gprx.com/search?q=",                       icon: "🎵",  cats: ["all","music","movies","tv"] },
+  { name: "Magnetdl",         url: "https://www.magnetdl.com/search/?q=",                 icon: "🧲",  cats: ["all","movies","tv","software","games"] },
+];
+
+let currentCat = 'all';
+
+function setCategory(cat, el) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderSites();
+}
+
+function buildUrl(site, q) {
+  const enc = encodeURIComponent(q);
+  if (site.special === '1337x') return site.url.replace('{Q}', enc);
+  if (site.special === 'yts')   return site.url.replace('{Q}', enc.replace(/%20/g, '+'));
+  if (site.special === 'lime')  return site.url.replace('{Q}', enc);
+  return site.url + enc;
+}
+
+function openSite(name) {
+  const q = document.getElementById('query').value.trim();
+  const site = allSites.find(s => s.name === name);
+  if (!site) return;
+  const url = q ? buildUrl(site, q) : site.url.split('{Q}')[0].split('?')[0];
+  window.open(url, '_blank');
+}
+
+function searchAll() {
+  const q = document.getElementById('query').value.trim();
+  if (!q) { document.getElementById('query').focus(); return; }
+  const filtered = allSites.filter(s => s.cats.includes(currentCat));
+  filtered.forEach((s, i) => {
+    setTimeout(() => window.open(buildUrl(s, q), '_blank'), i * 100);
+  });
+}
+
+function renderSites() {
+  const grid = document.getElementById('sites-grid');
+  const filtered = allSites.filter(s => s.cats.includes(currentCat));
+  grid.innerHTML = filtered.map(s => `
+    <div class="site-card" onclick="openSite('${s.name.replace(/'/g,"\\'")}')">
+      <div class="site-icon">${s.icon}</div>
+      <div class="site-info">
+        <div class="site-name">${s.name}</div>
+        <div class="site-tags">${s.cats.filter(c=>c!=='all').map(c=>`<span class="tag">${c}</span>`).join('')}</div>
+      </div>
+      <span class="arrow">↗</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('query').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchAll();
+});
+
+renderSites();
+</script>
+</body>
+</html>
